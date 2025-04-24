@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>d2312959-131c-4d07-ba94-eba98c4c0355</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Garrard.GitLab" Version="0.0.20" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
+    <PackageReference Include="ModelContextProtocol" Version="0.1.0-preview.10" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.1.0-preview.10" />
+  </ItemGroup>
+
+</Project>
