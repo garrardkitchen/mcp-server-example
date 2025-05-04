@@ -73,5 +73,5 @@ dotnet user-secrets set "GitLab:Token" "<your-token-value>"
 GitLab Domain
 
 ```bash
-dotnet user-secrets set "GitLab:domain" "<your-domain-value>"
+dotnet user-secrets set "GitLab:Domain" "<your-domain-value>"
 ```
