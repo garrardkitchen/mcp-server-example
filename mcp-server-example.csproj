@@ -8,6 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.13.2" />
+    <PackageReference Include="Azure.ResourceManager" Version="1.13.1" />
+    <PackageReference Include="Azure.ResourceManager.Compute" Version="1.9.0" />
     <PackageReference Include="Garrard.GitLab" Version="0.0.20" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
     <PackageReference Include="ModelContextProtocol" Version="0.1.0-preview.10" />
