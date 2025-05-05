@@ -21,12 +21,10 @@ public class GitLabTools
     public async Task<IEnumerable<GitLabGroupDto>> SearchGroupsAsync(string pattern) {
 
         _logger.LogInformation("SearchGroupsAsync called with pattern: {Pattern}", pattern); // Log the method call
-        
-        try {
-            var token = _configurationManager["GitLab:Token"] ?? throw new Exception("Missing GitLab:Token");
-            var domain = _configurationManager["GitLab:Domain"] ?? throw new Exception("Missing GitLab:Domain");
-            var groups = await GroupOperations.SearchGroups(pattern, token, domain);
 
+        try {
+            var (token, domain) = GetGitLabConfiguration();
+            var groups = await GroupOperations.SearchGroups(pattern, token, domain);
             if (groups.IsSuccess)
             {
                 return groups.Value.ToList();
@@ -50,8 +48,7 @@ public class GitLabTools
         _logger.LogInformation("GetProjectsInGroupAsync called with pattern: {Pattern}", groupPattern); // Log the method call
         
         try {
-            var token = _configurationManager["GitLab:Token"] ?? throw new Exception("Missing GitLab:Token");
-            var domain = _configurationManager["GitLab:Domain"] ?? throw new Exception("Missing GitLab:Domain");
+            var (token, domain) = GetGitLabConfiguration();
             var projects = await ProjectOperations.GetProjectsInGroup(groupPattern, token, domain);
 
             if (projects.IsSuccess)
@@ -73,8 +70,7 @@ public class GitLabTools
         _logger.LogInformation("GetVariablesInProjectAsync called with pattern: {Pattern}", projectId); // Log the method call
         
         try {
-            var token = _configurationManager["GitLab:Token"] ?? throw new Exception("Missing GitLab:Token");
-            var domain = _configurationManager["GitLab:Domain"] ?? throw new Exception("Missing GitLab:Domain");
+            var (token, domain) = GetGitLabConfiguration();
             var projects = await ProjectOperations.GetProjectVariables(projectId, token, domain);
 
             if (projects.IsSuccess)
@@ -100,5 +96,12 @@ public class GitLabTools
             _logger.LogError(ex, "Error occurred in GetVariablesInProjectAsync with pattern: {Pattern}", projectId);
             throw;
         }
+    }
+    
+    private (string Token, string Domain) GetGitLabConfiguration()
+    {
+        var token = _configurationManager["GitLab:Token"] ?? throw new Exception("Missing GitLab:Token");
+        var domain = _configurationManager["GitLab:Domain"] ?? throw new Exception("Missing GitLab:Domain");
+        return (token, domain);
     }
 }
