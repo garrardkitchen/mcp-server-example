@@ -44,4 +44,61 @@ public class GitLabTools
         }
     }
 
+    [McpServerTool, Description("Returns a list of Projects in GitLab group")]
+    public async Task<IEnumerable<GitLabProjectInfoDto>> GetProjectsInGroupAsync(string groupPattern) {
+
+        _logger.LogInformation("GetProjectsInGroupAsync called with pattern: {Pattern}", groupPattern); // Log the method call
+        
+        try {
+            var token = _configurationManager["GitLab:Token"] ?? throw new Exception("Missing GitLab:Token");
+            var domain = _configurationManager["GitLab:Domain"] ?? throw new Exception("Missing GitLab:Domain");
+            var projects = await ProjectOperations.GetProjectsInGroup(groupPattern, token, domain);
+
+            if (projects.IsSuccess)
+            {
+                return projects.Value.ToList();
+            }
+            return new List<GitLabProjectInfoDto>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred in GetProjectsInGroupAsync with pattern: {Pattern}", groupPattern);
+            throw;
+        }
+    }
+
+    [McpServerTool, Description("Returns a list of variables in GitLab project")]
+    public async Task<IEnumerable<GitLabProjectVariableDto>> GetVariablesInProjectAsync(string projectId) {
+
+        _logger.LogInformation("GetVariablesInProjectAsync called with pattern: {Pattern}", projectId); // Log the method call
+        
+        try {
+            var token = _configurationManager["GitLab:Token"] ?? throw new Exception("Missing GitLab:Token");
+            var domain = _configurationManager["GitLab:Domain"] ?? throw new Exception("Missing GitLab:Domain");
+            var projects = await ProjectOperations.GetProjectVariables(projectId, token, domain);
+
+            if (projects.IsSuccess)
+            {
+                var variables = projects.Value.ToList();
+                foreach (var variable in variables)
+                {
+                    if (variable.Masked && !string.IsNullOrEmpty(variable.Value) && variable.Value.Length > 4)
+                    {
+                        variable.Value = new string('*', variable.Value.Length - 4) + variable.Value.Substring(variable.Value.Length - 4);
+                    }
+                    else if (variable.Masked && !string.IsNullOrEmpty(variable.Value))
+                    {
+                        variable.Value = new string('*', variable.Value.Length);
+                    }
+                }
+                return variables;
+            }
+            return new List<GitLabProjectVariableDto>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred in GetVariablesInProjectAsync with pattern: {Pattern}", projectId);
+            throw;
+        }
+    }
 }

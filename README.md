@@ -2,10 +2,28 @@
 
 This project demonstrates a basic implementation of an MCP (Model Context Protocol) server using .NET. It provides endpoints for interacting with MCP clients and includes tools for testing and debugging, such as the MCP Inspector. The example also shows how to integrate with external services like GitLab using user secrets for configuration.
 
+## Tools
+
+### AzureTool
+
+- **GetAzureSubscriptions**: Retrieves a list of Azure subscriptions and their IDs.
+- **GetListOfResourceGroups**: Retrieves a list of Azure resource groups for a given subscription.
+- **GetVirtualMachinesMatchTagKey**: Retrieves all virtual machine names and their tags from a subscription where the VM has a tag that matches a specified tag key.
+
+### WhoIsTool
+
+- **WhoIs Lookup**: Provides domain registration and ownership information for a given domain.
+
+### GitLabTools
+
+- **SearchGroupsAsync**: Returns a list of GitLab groups based on a search pattern.
+- **GetProjectsInGroupAsync**: Returns a list of projects in a specified GitLab group.
+- **GetVariablesInProjectAsync**: Returns a list of variables in a GitLab project, masking variable values if they are set as masked (leaving the last 4 characters visible).
+
 ## How to run
 
 >[!NOTE]
-> To run the GitLabTool (SearchGroupsAsync), follow the instructions [here](#user-secrets)
+> To run the GitLabTool tools it requires both a PAT and a domain. Please follow the instructions [here](#user-secrets)
 
 ```bash
 dotnet build
@@ -75,3 +93,4 @@ GitLab Domain
 ```bash
 dotnet user-secrets set "GitLab:Domain" "<your-domain-value>"
 ```
+`
