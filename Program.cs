@@ -1,6 +1,11 @@
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+builder.Services.AddSingleton<Azure.ResourceManager.ArmClient>(sp =>
+{
+    // Use DefaultAzureCredential for authentication
+    return new Azure.ResourceManager.ArmClient(new Azure.Identity.DefaultAzureCredential());
+});
 builder.Services.AddMcpServer()
     .WithHttpTransport()
     .WithTools<GitLabTools>()
@@ -12,3 +17,4 @@ var app = builder.Build();
 app.MapMcp();
 
 await app.RunAsync();
+

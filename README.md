@@ -6,13 +6,13 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 
 ### AzureTool
 
-- **GetAzureSubscriptions**: Retrieves a list of Azure subscriptions and their IDs.
-- **GetListOfResourceGroups**: Retrieves a list of Azure resource groups for a given subscription.
-- **GetVirtualMachinesMatchTagKey**: Retrieves all virtual machine names and their tags from a subscription where the VM has a tag that matches a specified tag key.
+- **GetAzureSubscriptionsAsync**: Retrieves a list of Azure subscriptions and their IDs.
+- **GetListOfResourceGroupsAsync**: Retrieves a list of Azure resource groups for a given subscription.
+- **GetVirtualMachinesMatchTagKeyAsync**: Retrieves all virtual machine names and their tags from a subscription where the VM has a tag that matches a specified tag key.
 
 ### WhoIsTool
 
-- **WhoIs Lookup**: Provides domain registration and ownership information for a given domain.
+- **WhoIs**: Provides domain registration and ownership information for a given domain.
 
 ### GitLabTools
 
