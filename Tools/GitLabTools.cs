@@ -72,19 +72,7 @@ public class GitLabTools
 
             if (projects.IsSuccess)
             {
-                var variables = projects.Value.ToList();
-                foreach (var variable in variables)
-                {
-                    if (variable.Masked && !string.IsNullOrEmpty(variable.Value) && variable.Value.Length > 4)
-                    {
-                        variable.Value = new string('*', variable.Value.Length - 4) + variable.Value.Substring(variable.Value.Length - 4);
-                    }
-                    else if (variable.Masked && !string.IsNullOrEmpty(variable.Value))
-                    {
-                        variable.Value = new string('*', variable.Value.Length);
-                    }
-                }
-                return variables;
+                return projects.Value.ToMasked();
             }
             return new List<GitLabProjectVariableDto>();
         }
