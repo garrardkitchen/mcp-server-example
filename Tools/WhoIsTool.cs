@@ -1,10 +1,21 @@
 ﻿using System.ComponentModel;
 using ModelContextProtocol.Server;
 
+/// <summary>
+/// Provides functionality to retrieve personalized statements about a person based on their full name.
+/// </summary>
 [McpServerToolType]
 public class WhoIsTool
 {
-    [McpServerTool, Description("Retrieves information about a person based on their full name and returns a personalized statement with a randomly selected positive attribute")]
+    /// <summary>
+    /// Retrieves information about a person based on their full name and returns a personalized statement
+    /// with a randomly selected positive attribute.
+    /// </summary>
+    /// <param name="fullname">The full name of the person to generate information for.</param>
+    /// <returns>A string containing the person's name followed by a randomly selected positive description.</returns>
+    [McpServerTool,
+     Description(
+         "Retrieves information about a person based on their full name and returns a personalized statement with a randomly selected positive attribute")]
     public string WhoIs(string fullname) => $"{fullname.ToCapitalize()} is {_superlatives[_random.Next(_superlatives.Length)]}!";
     
     private static readonly Random _random = new Random();

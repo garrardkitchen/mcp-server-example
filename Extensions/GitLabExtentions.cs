@@ -2,6 +2,11 @@ using Garrard.GitLab;
 
 public static class GitLabExtentions
 {
+    /// <summary>
+    /// Masks the values of variables in the provided collection based on their masking configuration.
+    /// </summary>
+    /// <param name="variables">A collection of GitLabProjectVariableDto objects to be processed. If the variable is marked as masked and has a value, the value will be partially or fully masked depending on its length.</param>
+    /// <returns>A collection of GitLabProjectVariableDto objects where the variable values have been masked as configured.</returns>
     public static IEnumerable<GitLabProjectVariableDto> ToMasked(this IEnumerable<GitLabProjectVariableDto>? variables)
     {
         if (variables == null || !variables.Any())
