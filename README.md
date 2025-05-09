@@ -9,6 +9,15 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 - **GetAzureSubscriptionsAsync**: Retrieves a list of Azure subscriptions and their IDs.
 - **GetListOfResourceGroupsAsync**: Retrieves a list of Azure resource groups for a given subscription.
 - **GetVirtualMachinesMatchTagKeyAsync**: Retrieves all virtual machine names and their tags from a subscription where the VM has a tag that matches a specified tag key.
+- **GetResourcesInResourceGroupAsync**: Retrieves all resources within a specified resource group.
+- **GetResourcePropertiesAsync**: Retrieves a dictionary of properties and metadata for a specific Azure resource based on its resource ID.
+
+> [!NOTE]
+> **Prompts**:
+> - retrieve a list of azure subscriptions and their ids
+> - retrieve a list of resource groups in ??? 
+> - retrieve all the resource ids and types in resource group ???
+> - retrieve all the properties and metadata for azure resource ???
 
 ### WhoIsTool
 
@@ -93,4 +102,3 @@ GitLab Domain
 ```bash
 dotnet user-secrets set "GitLab:Domain" "<your-domain-value>"
 ```
-`
