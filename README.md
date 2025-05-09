@@ -18,6 +18,9 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 > - retrieve a list of resource groups in ??? 
 > - retrieve all the resource ids and types in resource group ???
 > - retrieve all the properties and metadata for azure resource ???
+> ---
+> **Actual prompt**:
+> retrieve all resource groups in the developmentsub subscription. For each resource group, retrieve all resources. Cross-check the resource types with those that can integrate with Azure Key Vault. Finally, produce a markdown table that includes the resource group, resource ID, resource name, and resource type.
 
 ### WhoIsTool
 
