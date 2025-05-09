@@ -4,6 +4,7 @@ using Azure.Identity;
 using Azure.Core;
 using Azure.ResourceManager;
 using Azure.ResourceManager.Compute;
+using Azure.ResourceManager.Resources;
 
 /// <summary>
 /// Represents a tool for interacting with Microsoft Azure resources.
@@ -82,6 +83,74 @@ public class AzureTool
             }
         }
 
+        return result;
+    }
+
+    /// <summary>
+    /// Retrieves all resources within a specified resource group.
+    /// </summary>
+    /// <param name="subscriptionId">The subscription ID where the resource group is located.</param>
+    /// <param name="resourceGroupName">The name of the resource group to retrieve resources from.</param>
+    /// <returns>A dictionary where the key is the resource name and the value is another dictionary containing metadata about the resource.</returns>
+    [McpServerTool, Description("Retrieves all resources within a specified resource group")]
+    public async Task<Dictionary<string, IDictionary<string, string>>> GetResourcesInResourceGroupAsync(string subscriptionId, string resourceGroupName)
+    {
+        var result = new Dictionary<string, IDictionary<string, string>> ();
+        var subscription = _client.GetSubscriptionResource(new ResourceIdentifier($"/subscriptions/{subscriptionId}"));
+        var resourceGroup = subscription.GetResourceGroup(resourceGroupName);
+
+        await foreach (var resource in resourceGroup.Value.GetGenericResourcesAsync().AsPages())
+        {
+            foreach (var page in resource.Values)
+            {
+                result[page.Data.Name] = new Dictionary<string, string>
+                {
+                    ["ResourceType"] = page.Data.ResourceType.ToString(),
+                    ["ResourceId"] = page.Data.Id.ToString(),
+                };
+                    
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Retrieves a dictionary of properties and metadata for a specific Azure resource based on its resource ID.
+    /// </summary>
+    /// <param name="resourceId">The Resource ID of the Azure resource for which properties and metadata are to be retrieved.</param>
+    /// <returns>A dictionary containing key-value pairs representing the properties and metadata of the specified Azure resource.</returns>
+    [McpServerTool,
+     Description("Retrieves a dictionary of properties and other metadata for a specific azure resource id")]
+    public async Task<Dictionary<string, string>> GetResourcePropertiesAsync(string resourceId)
+    {
+        var result = new Dictionary<string, string>();
+        var resource = await _client.GetGenericResource(new ResourceIdentifier(resourceId)).GetAsync();
+
+        // result[page.Data.Name] = page.Data.ResourceType.ToString();
+        if (resource != null && resource.Value.Data != null)
+        {
+            var data = resource.Value.Data;
+            // Add common properties
+            result["Id"] = data.Id.ToString();
+            result["Name"] = data.Name;
+            result["Type"] = data.ResourceType.ToString();
+            result["Location"] = data.Location;
+            result["Kind"] = data.Kind;
+            result["ManagedBy"] = data.ManagedBy;
+            result["Tags"] = data.Tags != null ? string.Join(";", data.Tags.Select(kv => $"{kv.Key}={kv.Value}")) : "";
+
+            // Add all additional properties from the Properties dictionary if available
+            if (data.Properties != null)
+            {
+                var propertiesDictionary = data.Properties.ToObjectFromJson<Dictionary<string, object>>();
+                foreach (var prop in propertiesDictionary)
+                {
+                    result[$"Property:{prop.Key}"] = prop.Value?.ToString() ?? "";
+                }
+            }
+        }
+        
         return result;
     }
 }
