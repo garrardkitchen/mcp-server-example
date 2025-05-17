@@ -33,15 +33,18 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 - **GetVariablesInProjectAsync**: Returns a list of variables in a GitLab project, masking variable values if they are set as masked (leaving the last 4 characters visible).
 - **AddAzureConsumptionBudgetAsync**: Checks for and adds an Azure consumption budget to a GitLab project via a Merge Request
 
-  ```
-  # prompt to get a list of projects
+> [!NOTE]
+> **Prompts**:
+> - retrieve list of projects in gitlab from the ??? group
+> - retrieve a list of projects in a specified GitLab group.
+> - retrieve a list of variables in a specified GitLab project
+> - using the ??? gitlab project, check for an azure consumption budget in the ??? branch, and add if not found
+> ---
+> **Actual prompts**:
+> - retrieve list of projects in gitlab from the upe group
+> - retrieve a list of variables in a specified GitLab project, masking variable values if they are set as masked (leaving the last 4 characters visible).
+> - using the subscription-siem gitlab project, check for an azure consumption budget in the "feat/kitcheng/init" branch, and add if not found
 
-  retrieve list of projects in gitlab from the upe group
-
-  # prompt to check then add budget if not present
-
-  using the subscription-siem gitlab project, check for an azure consumption budget in the "feat/kitcheng/init" branch, and add if not there
-  ```
 
 ## How to run
 
