@@ -44,6 +44,7 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 > - retrieve list of projects in gitlab from the upe group
 > - retrieve a list of variables in a specified GitLab project, masking variable values if they are set as masked (leaving the last 4 characters visible).
 > - using the subscription-siem gitlab project, check for an azure consumption budget in the "feat/kitcheng/init" branch, and add if not found
+> - Get a list of GitLab groups using the search pattern upe as a markdown table with name, web_url (as 'click me'), parent_id, and an emoji for has_subgroups. Group by parent id. Include group id in brackets after the name. Then create a tree structure nesting groups by parent id and group id.
 
 
 ## How to run
