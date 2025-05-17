@@ -31,6 +31,17 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 - **SearchGroupsAsync**: Returns a list of GitLab groups based on a search pattern.
 - **GetProjectsInGroupAsync**: Returns a list of projects in a specified GitLab group.
 - **GetVariablesInProjectAsync**: Returns a list of variables in a GitLab project, masking variable values if they are set as masked (leaving the last 4 characters visible).
+- **AddAzureConsumptionBudgetAsync**: Checks for and adds an Azure consumption budget to a GitLab project via a Merge Request
+
+  ```
+  # prompt to get a list of projects
+
+  retrieve list of projects in gitlab from the upe group
+
+  # prompt to check then add budget if not present
+
+  using the subscription-siem gitlab project, check for an azure consumption budget in the "feat/kitcheng/init" branch, and add if not there
+  ```
 
 ## How to run
 
@@ -105,3 +116,6 @@ GitLab Domain
 ```bash
 dotnet user-secrets set "GitLab:Domain" "<your-domain-value>"
 ```
+
+
+
