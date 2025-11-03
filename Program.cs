@@ -1,4 +1,5 @@
 using EverythingServer.Resources;
+using EverythingServer.Prompts; // Add this using directive for prompts
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +16,8 @@ builder.Services.AddMcpServer()
     .WithTools<AzureTool>() // Register AzureTool
     .WithResources<UserResources>()
     // .WithResources<DirectResourceType>()
-    .WithResources<SimpleResourceType>();
+    .WithResources<SimpleResourceType>()
+    .WithPrompts<TextPrompts>(); // Register prompts
 
 var app = builder.Build();
 

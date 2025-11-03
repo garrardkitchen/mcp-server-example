@@ -46,6 +46,18 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 > - using the subscription-siem gitlab project, check for an azure consumption budget in the "feat/kitcheng/init" branch, and add if not found
 > - Get a list of GitLab groups using the search pattern upe as a markdown table with name, web_url (as 'click me'), parent_id, and an emoji for has_subgroups. Group by parent id. Include group id in brackets after the name. Then create a tree structure nesting groups by parent id and group id.
 
+## Prompts
+
+This project also exposes three simple MCP prompts (see `Prompts/TextPrompts.cs`):
+
+- ReverseWord(word): Reverse a single word and return only the reversed word.
+- OneSentenceSummary(text): Return a single concise sentence summarizing the provided text.
+- SummaryBenefitsAndReferences(topic): Return a short summary paragraph, a bullet list of benefits, and a bullet list of references for the given topic.
+
+How to try them with the MCP Inspector:
+- Start this server (see How to run below) and connect the Inspector via SSE as shown later in this README.
+- Click List Prompts and select one of the above prompt names.
+- Provide the parameter value(s) when prompted and run it.
 
 ## How to run
 
@@ -120,6 +132,3 @@ GitLab Domain
 ```bash
 dotnet user-secrets set "GitLab:Domain" "<your-domain-value>"
 ```
-
-
-
