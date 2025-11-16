@@ -12,8 +12,8 @@ builder.Services.AddSingleton<Azure.ResourceManager.ArmClient>(sp =>
 builder.Services.AddMcpServer()
     .WithHttpTransport()
     .WithTools<GitLabTools>()
-    .WithTools<WhoIsTool>()
     .WithTools<AzureTool>() // Register AzureTool
+    .WithTools<SensitiveDataExampleTool>()
     .WithResources<UserResources>()
     // .WithResources<DirectResourceType>()
     .WithResources<SimpleResourceType>()

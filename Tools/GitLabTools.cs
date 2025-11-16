@@ -108,7 +108,20 @@ public class GitLabTools
             throw;
         }
     }
-    
+
+    #region Constants
+    private const string BudgetFileName = "budget.tf";
+    private const string VariablesFileName = "variable.tf";
+    private const string OutputFileName = "output.tf";
+    private const string NewBranchName = "feat/platform-engineering/add-budget";
+    private const string CommitMessage = "feat:Added Azure consumption budget";
+    private const string MergeRequestTitle = "feat: Added Azure consumption budget";
+    private const int BudgetThreshold = 80;
+    private const int DefaultBudgetAmount = 100;
+    private const string DefaultNotificationEmail = "garrard.kitchen@fujitsu.com";
+    private const string TimeGrain = "Monthly";
+    #endregion
+
     /// <summary>
     /// Checks if a GitLab project has an Azure consumption budget resource defined and adds it if it doesn't.
     /// </summary>
@@ -118,192 +131,24 @@ public class GitLabTools
     [McpServerTool, Description("Checks for and adds an Azure consumption budget to a GitLab project")]
     public async Task<string> AddAzureConsumptionBudgetAsync(string projectId, string branchName)
     {
-        _logger.LogInformation("AddAzureConsumptionBudgetAsync called with project ID: {ProjectId} and branch: {BranchName}", projectId, branchName);
+        ValidateInputParameters(projectId, branchName);
+        
+        _logger.LogInformation("AddAzureConsumptionBudgetAsync called with project ID: {ProjectId} and branch: {BranchName}", 
+            projectId, branchName);
+
         try
         {
-            // Get project details using GitLab REST API
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("PRIVATE-TOKEN", _token);
-            // Always prefix with https:// for all HTTP calls
-            var projectUrl = $"https://{_domain.TrimStart('h', 't', 'p', 's', ':', '/').TrimStart('/')}/api/v4/projects/{Uri.EscapeDataString(projectId)}";
-            var response = await httpClient.GetAsync(projectUrl);
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorResponse = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Failed to get project details: {errorResponse}");
-            }
-            var projectInfoJson = await response.Content.ReadAsStringAsync();
-            // Extract HTTP clone URL (force HTTPS, never use SSH)
-            var httpUrlMatch = Regex.Match(projectInfoJson, "\"http_url_to_repo\":\"(.*?)\"");
-            string cloneUrl = httpUrlMatch.Success ? httpUrlMatch.Groups[1].Value.Replace("\\", "") : string.Empty;
-            // Always use HTTPS for cloning
-            if (!string.IsNullOrEmpty(cloneUrl))
-            {
-                if (!cloneUrl.StartsWith("https://"))
-                {
-                    // Replace http:// with https:// if needed
-                    cloneUrl = Regex.Replace(cloneUrl, "^http://", "https://");
-                }
-                // Add token to the URL for authentication if using HTTPS
-                var uriBuilder = new UriBuilder(cloneUrl);
-                uriBuilder.UserName = "oauth2";
-                uriBuilder.Password = _token;
-                cloneUrl = uriBuilder.Uri.ToString();
-            }
-            else
-            {
-                throw new Exception("Could not find HTTPS clone URL for the project.");
-            }
-            // Create a temporary directory for the clone
-            string tempDir = Path.Combine(Path.GetTempPath(), $"gitlab-budget-{Guid.NewGuid()}");
-            Directory.CreateDirectory(tempDir);
+            var cloneUrl = await GetProjectCloneUrlAsync(projectId);
+            var tempDir = CreateTempDirectory();
+
             try
             {
-                // Step 1: Clone the repository using HTTPS only
-                _logger.LogInformation("Cloning repository to {TempDir}", tempDir);
-                await RunGitCommand(tempDir, $"clone {cloneUrl} .");
-                // Step 2: Check out the user-specified branch
-                _logger.LogInformation("Checking out branch {BranchName}", branchName);
-                await RunGitCommand(tempDir, $"checkout {branchName}");
-                await RunGitCommand(tempDir, "pull");
-                
-                // Check if the repository already has an Azure consumption budget defined
-                bool hasBudget = await CheckForConsumptionBudget(tempDir);
-                if (hasBudget)
-                {
-                    _logger.LogInformation("Azure consumption budget already exists in project");
-                    return "Azure consumption budget resource already exists in the project.";
-                }
-                
-                var newBranchName = "feat/platform-engineering/add-budget";
-                // Step 3: Create a new branch
-                _logger.LogInformation("Creating new branch '{NewBranchName}'", newBranchName);
-                await RunGitCommand(tempDir, $"checkout -b {newBranchName}");
-                
-                // Step 4: Add the budget.tf file
-                _logger.LogInformation("Creating budget.tf file");
-                // Calculate today's date and a year from today in ISO 8601 format
-                var today = DateTime.UtcNow.Date;
-                var nextYear = today.AddYears(1);
-                // Set startDate to the first day of the current month in ISO 8601 format
-                var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
-                string startDate = firstDayOfMonth.ToString("yyyy-MM-dd") + "T00:00:00Z";
-                // Set endDate to the last day of the month a year from today in ISO 8601 format
-                var lastDayOfNextYearMonth = new DateTime(nextYear.Year, nextYear.Month, DateTime.DaysInMonth(nextYear.Year, nextYear.Month));
-                string endDate = lastDayOfNextYearMonth.ToString("yyyy-MM-dd") + "T00:00:00Z";
-                string budgetTfContent = $@"resource ""azurerm_consumption_budget_subscription"" ""this"" {{
-  name            = ""budget""
-  subscription_id = ""/subscriptions/${{var.ARM_SUBSCRIPTION_ID}}""
-  amount          = var.budget_amount
-  time_grain      = ""Monthly""
-  time_period {{
-    start_date = ""{startDate}""
-    end_date   = ""{endDate}""
-  }}
-
-  notification {{
-    enabled        = true
-    threshold      = 80
-    operator       = ""GreaterThan""
-    contact_emails = [var.budget_notification_email]
-  }}
-}}";
-                await File.WriteAllTextAsync(Path.Combine(tempDir, "budget.tf"), budgetTfContent);
-                
-                // Step 5: Update variable.tf file
-                _logger.LogInformation("Updating variable.tf file");
-                string variablesTfPath = Path.Combine(tempDir, "variable.tf");
-                string variablesContent = @"variable ""budget_amount"" {
-  description = ""The allocated budget for this subscription""
-  type        = number
-  default     = 100
-}
-
-variable ""budget_notification_email"" {
-  description = ""The address to use to notify when the budet hits the threshold and beyond""
-  type        = string
-  default     = ""garrard.kitchen@fujitsu.com""
-}
-";
-                if (File.Exists(variablesTfPath))
-                {
-                    string existingContent = await File.ReadAllTextAsync(variablesTfPath);
-                    await File.WriteAllTextAsync(variablesTfPath, existingContent + Environment.NewLine + variablesContent);
-                }
-                else
-                {
-                    await File.WriteAllTextAsync(variablesTfPath, variablesContent);
-                }
-                
-                // Step 6: Update output.tf file
-                _logger.LogInformation("Updating output.tf file");
-                string outputTfPath = Path.Combine(tempDir, "output.tf");
-                string outputContent = @"output ""budget_name"" {
-  value = azurerm_consumption_budget_subscription.this.name
-}
-";
-                if (File.Exists(outputTfPath))
-                {
-                    string existingContent = await File.ReadAllTextAsync(outputTfPath);
-                    await File.WriteAllTextAsync(outputTfPath, existingContent + Environment.NewLine + outputContent);
-                }
-                else
-                {
-                    await File.WriteAllTextAsync(outputTfPath, outputContent);
-                }
-                
-                // Step 7: Commit changes
-                _logger.LogInformation("Committing changes");
-                await RunGitCommand(tempDir, "add budget.tf variable.tf output.tf");
-                await RunGitCommand(tempDir, "commit -m \"feat:Added Azure consumption budget\"");
-                
-                // Step 8: Push changes
-                _logger.LogInformation("Pushing changes to remote");
-                await RunGitCommand(tempDir, $"push --set-upstream origin {newBranchName}");
-                
-                // Step 9: Create merge request
-                _logger.LogInformation("Creating merge request");
-                // Always prefix with https:// for all HTTP calls
-                var createMrUrl = $"https://{_domain.TrimStart('h', 't', 'p', 's', ':', '/').TrimStart('/')}/api/v4/projects/{projectId}/merge_requests";
-                using var httpClientMr = new HttpClient();
-                httpClientMr.DefaultRequestHeaders.Add("PRIVATE-TOKEN", _token);
-                var content = new StringContent(
-                    $"{{\"source_branch\":\"{newBranchName}\",\"target_branch\":\"{branchName}\",\"title\":\"feat: Added Azure consumption budget\"}}",
-                    Encoding.UTF8,
-                    "application/json");
-                var responseMr = await httpClientMr.PostAsync(createMrUrl, content);
-                if (!responseMr.IsSuccessStatusCode)
-                {
-                    var errorResponseMr = await responseMr.Content.ReadAsStringAsync();
-                    throw new Exception($"Failed to create merge request: {errorResponseMr}");
-                }
-                var mrJsonResponse = await responseMr.Content.ReadAsStringAsync();
-                // Extract web_url from the JSON response
-                var match = Regex.Match(mrJsonResponse, "\"web_url\":\"(.*?)\"");
-                if (match.Success)
-                {
-                    string mrUrl = match.Groups[1].Value.Replace("\\", "");
-                    _logger.LogInformation("Merge request created successfully: {MrUrl}", mrUrl);
-                    return mrUrl;
-                }
-                
-                _logger.LogWarning("Could not extract merge request URL from response");
-                return "Merge request created but could not extract URL from response.";
+                await ProcessRepositoryAsync(tempDir, cloneUrl, branchName, projectId);
+                return await CreateMergeRequestAsync(projectId, branchName);
             }
             finally
             {
-                // Clean up temp directory
-                try
-                {
-                    if (Directory.Exists(tempDir))
-                    {
-                        Directory.Delete(tempDir, true);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to clean up temporary directory: {TempDir}", tempDir);
-                }
+                CleanupTempDirectory(tempDir);
             }
         }
         catch (Exception ex)
@@ -312,6 +157,295 @@ variable ""budget_notification_email"" {
             throw;
         }
     }
+
+    #region Private Helper Methods
+
+    private static void ValidateInputParameters(string projectId, string branchName)
+    {
+        if (string.IsNullOrWhiteSpace(projectId))
+            throw new ArgumentException("Project ID cannot be null or empty", nameof(projectId));
+        
+        if (string.IsNullOrWhiteSpace(branchName))
+            throw new ArgumentException("Branch name cannot be null or empty", nameof(branchName));
+    }
+
+    private async Task<string> GetProjectCloneUrlAsync(string projectId)
+    {
+        using var httpClient = CreateHttpClientWithAuth();
+        var projectUrl = BuildProjectApiUrl(projectId);
+        
+        var response = await httpClient.GetAsync(projectUrl);
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorResponse = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException($"Failed to get project details: {errorResponse}");
+        }
+
+        var projectInfoJson = await response.Content.ReadAsStringAsync();
+        return ExtractAndFormatCloneUrl(projectInfoJson);
+    }
+
+    private HttpClient CreateHttpClientWithAuth()
+    {
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("PRIVATE-TOKEN", _token);
+        return httpClient;
+    }
+
+    private string BuildProjectApiUrl(string projectId)
+    {
+        var normalizedDomain = _domain.TrimStart('h', 't', 'p', 's', ':', '/').TrimStart('/');
+        return $"https://{normalizedDomain}/api/v4/projects/{Uri.EscapeDataString(projectId)}";
+    }
+
+    private string ExtractAndFormatCloneUrl(string projectInfoJson)
+    {
+        var httpUrlMatch = Regex.Match(projectInfoJson, "\"http_url_to_repo\":\"(.*?)\"");
+        
+        if (!httpUrlMatch.Success)
+            throw new InvalidOperationException("Could not find HTTPS clone URL for the project.");
+
+        var cloneUrl = httpUrlMatch.Groups[1].Value.Replace("\\", "");
+        
+        // Ensure HTTPS
+        if (!cloneUrl.StartsWith("https://"))
+        {
+            cloneUrl = Regex.Replace(cloneUrl, "^http://", "https://");
+        }
+
+        // Add authentication
+        var uriBuilder = new UriBuilder(cloneUrl)
+        {
+            UserName = "oauth2",
+            Password = _token
+        };
+
+        return uriBuilder.Uri.ToString();
+    }
+
+    private static string CreateTempDirectory()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"gitlab-budget-{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+        return tempDir;
+    }
+
+    private async Task ProcessRepositoryAsync(string tempDir, string cloneUrl, string branchName, string projectId)
+    {
+        await CloneAndCheckoutRepositoryAsync(tempDir, cloneUrl, branchName);
+        
+        if (await CheckForConsumptionBudget(tempDir))
+        {
+            _logger.LogInformation("Azure consumption budget already exists in project");
+            throw new InvalidOperationException("Azure consumption budget resource already exists in the project.");
+        }
+
+        await CreateFeatureBranchAsync(tempDir);
+        await CreateBudgetFilesAsync(tempDir);
+        await CommitAndPushChangesAsync(tempDir);
+    }
+
+    private async Task CloneAndCheckoutRepositoryAsync(string tempDir, string cloneUrl, string branchName)
+    {
+        _logger.LogInformation("Cloning repository to {TempDir}", tempDir);
+        await RunGitCommand(tempDir, $"clone {cloneUrl} .");
+        
+        _logger.LogInformation("Checking out branch {BranchName}", branchName);
+        await RunGitCommand(tempDir, $"checkout {branchName}");
+        await RunGitCommand(tempDir, "pull");
+    }
+
+    private async Task CreateFeatureBranchAsync(string tempDir)
+    {
+        _logger.LogInformation("Creating new branch '{NewBranchName}'", NewBranchName);
+        await RunGitCommand(tempDir, $"checkout -b {NewBranchName}");
+    }
+
+    private async Task CreateBudgetFilesAsync(string tempDir)
+    {
+        await CreateBudgetTerraformFileAsync(tempDir);
+        await UpdateVariablesFileAsync(tempDir);
+        await UpdateOutputFileAsync(tempDir);
+    }
+
+    private async Task CreateBudgetTerraformFileAsync(string tempDir)
+    {
+        _logger.LogInformation("Creating {BudgetFileName} file", BudgetFileName);
+        
+        var (startDate, endDate) = CalculateBudgetDateRange();
+        var budgetContent = GenerateBudgetTerraformContent(startDate, endDate);
+        
+        await File.WriteAllTextAsync(Path.Combine(tempDir, BudgetFileName), budgetContent);
+    }
+
+    private static (string startDate, string endDate) CalculateBudgetDateRange()
+    {
+        var today = DateTime.UtcNow.Date;
+        var nextYear = today.AddYears(1);
+        
+        var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+        var startDate = firstDayOfMonth.ToString("yyyy-MM-dd") + "T00:00:00Z";
+        
+        var lastDayOfNextYearMonth = new DateTime(nextYear.Year, nextYear.Month, 
+            DateTime.DaysInMonth(nextYear.Year, nextYear.Month));
+        var endDate = lastDayOfNextYearMonth.ToString("yyyy-MM-dd") + "T00:00:00Z";
+        
+        return (startDate, endDate);
+    }
+
+    private static string GenerateBudgetTerraformContent(string startDate, string endDate)
+    {
+        return $@"resource ""azurerm_consumption_budget_subscription"" ""this"" {{
+  name            = ""budget""
+  subscription_id = ""/subscriptions/${{var.ARM_SUBSCRIPTION_ID}}""
+  amount          = var.budget_amount
+  time_grain      = ""{TimeGrain}""
+  time_period {{
+    start_date = ""{startDate}""
+    end_date   = ""{endDate}""
+  }}
+
+  notification {{
+    enabled        = true
+    threshold      = {BudgetThreshold}
+    operator       = ""GreaterThan""
+    contact_emails = [var.budget_notification_email]
+  }}
+}}";
+    }
+
+    private async Task UpdateVariablesFileAsync(string tempDir)
+    {
+        _logger.LogInformation("Updating {VariablesFileName} file", VariablesFileName);
+        
+        var variablesTfPath = Path.Combine(tempDir, VariablesFileName);
+        var variablesContent = GenerateVariablesContent();
+        
+        await AppendOrCreateFileAsync(variablesTfPath, variablesContent);
+    }
+
+    private static string GenerateVariablesContent()
+    {
+        return $@"variable ""budget_amount"" {{
+  description = ""The allocated budget for this subscription""
+  type        = number
+  default     = {DefaultBudgetAmount}
+}}
+
+variable ""budget_notification_email"" {{
+  description = ""The address to use to notify when the budget hits the threshold and beyond""
+  type        = string
+  default     = ""{DefaultNotificationEmail}""
+}}
+";
+    }
+
+    private async Task UpdateOutputFileAsync(string tempDir)
+    {
+        _logger.LogInformation("Updating {OutputFileName} file", OutputFileName);
+        
+        var outputTfPath = Path.Combine(tempDir, OutputFileName);
+        const string outputContent = @"output ""budget_name"" {
+  value = azurerm_consumption_budget_subscription.this.name
+}
+";
+        
+        await AppendOrCreateFileAsync(outputTfPath, outputContent);
+    }
+
+    private static async Task AppendOrCreateFileAsync(string filePath, string content)
+    {
+        if (File.Exists(filePath))
+        {
+            var existingContent = await File.ReadAllTextAsync(filePath);
+            await File.WriteAllTextAsync(filePath, existingContent + Environment.NewLine + content);
+        }
+        else
+        {
+            await File.WriteAllTextAsync(filePath, content);
+        }
+    }
+
+    private async Task CommitAndPushChangesAsync(string tempDir)
+    {
+        _logger.LogInformation("Committing changes");
+        await RunGitCommand(tempDir, $"add {BudgetFileName} {VariablesFileName} {OutputFileName}");
+        await RunGitCommand(tempDir, $"commit -m \"{CommitMessage}\"");
+        
+        _logger.LogInformation("Pushing changes to remote");
+        await RunGitCommand(tempDir, $"push --set-upstream origin {NewBranchName}");
+    }
+
+    private async Task<string> CreateMergeRequestAsync(string projectId, string branchName)
+    {
+        _logger.LogInformation("Creating merge request");
+        
+        using var httpClient = CreateHttpClientWithAuth();
+        var createMrUrl = BuildMergeRequestApiUrl(projectId);
+        var content = CreateMergeRequestContent(branchName);
+        
+        var response = await httpClient.PostAsync(createMrUrl, content);
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorResponse = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException($"Failed to create merge request: {errorResponse}");
+        }
+
+        var mrJsonResponse = await response.Content.ReadAsStringAsync();
+        return ExtractMergeRequestUrl(mrJsonResponse);
+    }
+
+    private string BuildMergeRequestApiUrl(string projectId)
+    {
+        var normalizedDomain = _domain.TrimStart('h', 't', 'p', 's', ':', '/').TrimStart('/');
+        return $"https://{normalizedDomain}/api/v4/projects/{projectId}/merge_requests";
+    }
+
+    private StringContent CreateMergeRequestContent(string branchName)
+    {
+        var requestBody = $@"{{
+            ""source_branch"": ""{NewBranchName}"",
+            ""target_branch"": ""{branchName}"",
+            ""title"": ""{MergeRequestTitle}""
+        }}";
+        
+        return new StringContent(requestBody, Encoding.UTF8, "application/json");
+    }
+
+    private string ExtractMergeRequestUrl(string mrJsonResponse)
+    {
+        var match = Regex.Match(mrJsonResponse, "\"web_url\":\"(.*?)\"");
+        
+        if (match.Success)
+        {
+            var mrUrl = match.Groups[1].Value.Replace("\\", "");
+            _logger.LogInformation("Merge request created successfully: {MrUrl}", mrUrl);
+            return mrUrl;
+        }
+        
+        _logger.LogWarning("Could not extract merge request URL from response");
+        return "Merge request created but could not extract URL from response.";
+    }
+
+    private void CleanupTempDirectory(string tempDir)
+    {
+        try
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, true);
+                _logger.LogDebug("Successfully cleaned up temporary directory: {TempDir}", tempDir);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to clean up temporary directory: {TempDir}", tempDir);
+        }
+    }
+
+    #endregion
     
     /// <summary>
     /// Checks if a consumption budget resource exists in the repository.
