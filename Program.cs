@@ -3,6 +3,7 @@ using EverythingServer.Prompts; // Add this using directive for prompts
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddLogging();
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddSingleton<Azure.ResourceManager.ArmClient>(sp =>
 {

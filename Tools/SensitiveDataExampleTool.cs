@@ -7,7 +7,12 @@ using ModelContextProtocol.Server;
 [McpServerToolType]
 public class SensitiveDataExampleTool
 {
-    
+    private readonly ILogger<SensitiveDataExampleTool> _logger;
+
+    public SensitiveDataExampleTool(ILogger<SensitiveDataExampleTool> logger)
+    {
+        _logger = logger;
+    }
     /// <summary>
     /// 
     /// </summary>
@@ -16,9 +21,13 @@ public class SensitiveDataExampleTool
     /// <returns></returns>
     [McpServerTool, Description("Sets a secret for a username")]
     public string SetASecretForDemoPurposes(
-        [Description("Username")] string username, 
-        [Description("The secret to set")] string secret) => $"{username.ToCapitalize()} new secret is {secret.ToPartialMask()}!";
-    
+        [Description("Username")] string username,
+        [Description("The secret to set")] string secret)
+    {
+        _logger.LogInformation($"Setting secret for {username} to {secret}");
+        return $"{username.ToCapitalize()} new secret is {secret.ToPartialMask()}!";
+    }
+
     /// <summary>
     /// 
     /// </summary>
