@@ -1,0 +1,52 @@
+name: Docker Build & Push
+
+on:
+  push:
+    branches: [ '**' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Extract version from csproj
+        id: version
+        run: |
+          VERSION=$(grep '<Version>' mcp-server-example.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Generate image tag
+        id: tag
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          BRANCH=${{ github.ref_name }}
+          
+          if [ "$BRANCH" = "main" ]; then
+            TAG="garrardkitchen/mcp-server-example:$VERSION"
+          else
+            DATETIME=$(date +%m%d%Y%H%M)
+            TAG="garrardkitchen/mcp-server-example:$VERSION-preview-$DATETIME"
+          fi
+          
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Image tag: $TAG"
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.tag.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
