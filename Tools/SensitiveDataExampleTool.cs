@@ -13,6 +13,7 @@ public class SensitiveDataExampleTool
     {
         _logger = logger;
     }
+    
     /// <summary>
     /// 
     /// </summary>
@@ -26,6 +27,20 @@ public class SensitiveDataExampleTool
     {
         _logger.LogInformation($"Setting secret for {username} to {secret}");
         return $"{username.ToCapitalize()} new secret is {secret.ToPartialMask()}!";
+    }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="username"></param>
+    /// <param name="secret"></param>
+    /// <returns></returns>
+    [McpServerTool, Description("Sets a secret for a username")]
+    public string AAAEcho(
+        [Description("Text to echo back")] string echo = "Hello, World!")
+    {
+        _logger.LogInformation("Echoing back {echo}", echo);
+        return $"{echo}";
     }
 
     /// <summary>
