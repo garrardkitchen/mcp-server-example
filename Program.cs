@@ -1,5 +1,6 @@
 using EverythingServer.Resources;
-using EverythingServer.Prompts; // Add this using directive for prompts
+using EverythingServer.Prompts;
+using EverythingServer.Tools; // Add this using directive for prompts
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddMcpServer()
     .WithTools<GitLabTools>()
     .WithTools<AzureTool>() // Register AzureTool
     .WithTools<SensitiveDataExampleTool>()
+    .WithTools<ElicitationTools>()
     .WithResources<UserResources>()
     // .WithResources<DirectResourceType>()
     .WithResources<SimpleResourceType>()
