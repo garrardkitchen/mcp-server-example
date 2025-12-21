@@ -26,6 +26,26 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 
 - **WhoIs**: Provides domain registration and ownership information for a given domain.
 
+### ElicitationTools
+
+- **GuessTheNumber**: A simple interactive game demonstrating the elicitation feature where the user is prompted to guess a number between 1 and 10. This tool showcases how to use the MCP server's `ElicitAsync` method to request structured input from users, including boolean responses, enum options, string inputs with validation (max length), and date inputs with specific formats.
+
+> [!NOTE]
+> This tool demonstrates the elicitation capability of MCP, which allows the server to request additional information from the user through a structured schema. The example shows:
+> - Boolean schema for yes/no questions
+> - Enum schema for multiple choice options (accept/decline)
+> - String schema with length constraints and descriptions
+> - Date schema with format validation (DD/MM/YYYY)
+
+### SensitiveDataExampleTool
+
+- **SetASecretForDemoPurposes**: Demonstrates handling sensitive data by setting a secret for a username and automatically masking it in the response (showing only the first 4 characters).
+- **AAAEcho**: A simple echo tool that returns the provided text (defaults to "Hello, World!").
+- **SetAnApiKeyForDemoPurposes**: Demonstrates handling API keys by associating them with URLs and automatically masking the key in the response (showing only the first 4 characters).
+
+> [!NOTE]
+> This tool demonstrates best practices for handling sensitive information in MCP tools. The `ToPartialMask()` extension method ensures that secrets and API keys are never fully exposed in responses, showing only the first 4 characters followed by asterisks.
+
 ### GitLabTools
 
 - **SearchGroupsAsync**: Returns a list of GitLab groups based on a search pattern.
