@@ -5,10 +5,16 @@ using ModelContextProtocol.Server;
 
 namespace EverythingServer.Tools;
 
+[McpServerToolType]
 public class ElicitationTools
 {
     private readonly ILogger<ElicitationTools> _logger;
-    private Random _random = new Random();
+    
+    // The Random instance should be declared as 'readonly' and initialized using the new Random.Shared
+    // property (available in .NET 6+) or made static readonly. Creating a new Random instance per class instance
+    // can lead to predictable sequences if multiple instances are created quickly.
+    // The WhoIsTool class uses 'static readonly Random' which is a better pattern for thread safety and randomness quality.
+    private static readonly Random _random = Random.Shared;
 
     public ElicitationTools(ILogger<ElicitationTools> logger)
     {
@@ -21,7 +27,6 @@ public class ElicitationTools
         CancellationToken token
     )
     {
-        
         // First ask the user if they want to play
         var playSchema = new ElicitRequestParams.RequestSchema
         {
@@ -34,7 +39,7 @@ public class ElicitationTools
                 },
                 ["Title"] = new ElicitRequestParams.StringSchema()
                 {
-                    MaxLength = 10,
+                    MaxLength = 30,
                     Description = "The title of the game",
                     Type = "string"
                 },
