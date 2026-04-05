@@ -66,6 +66,22 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 > - using the subscription-siem gitlab project, check for an azure consumption budget in the "feat/kitcheng/init" branch, and add if not found
 > - Get a list of GitLab groups using the search pattern upe as a markdown table with name, web_url (as 'click me'), parent_id, and an emoji for has_subgroups. Group by parent id. Include group id in brackets after the name. Then create a tree structure nesting groups by parent id and group id.
 
+## Resources
+
+### KitchenApplianceResources
+
+- **kitchen://appliances/all**: Returns the full kitchen appliance catalogue as a JSON table (10 rows).
+- **kitchen://appliances/{id}**: Returns a single appliance by numeric ID (1–10).
+
+Each appliance row includes: `id`, `name`, `category`, `powerWatts`, `priceGbp`, `brand`, `hasDigitalControls`.
+
+### UserResources
+
+This project exposes YAML-formatted user data via two MCP resources:
+
+- **user://{userId}**: Returns user data as YAML for a specific user.
+- **users://all**: Returns all users as YAML.
+
 ## Prompts
 
 This project also exposes three simple MCP prompts (see `Prompts/TextPrompts.cs`):
@@ -75,7 +91,7 @@ This project also exposes three simple MCP prompts (see `Prompts/TextPrompts.cs`
 - SummaryBenefitsAndReferences(topic): Return a short summary paragraph, a bullet list of benefits, and a bullet list of references for the given topic.
 
 How to try them with the MCP Inspector:
-- Start this server (see How to run below) and connect the Inspector via SSE as shown later in this README.
+- Start this server (see How to run below) and connect the Inspector via Streamable HTTP as shown later in this README.
 - Click List Prompts and select one of the above prompt names.
 - Provide the parameter value(s) when prompted and run it.
 
@@ -123,9 +139,12 @@ Starting MCP inspector...
 New SSE connection
 ```
 
-Using the HTTP Url you copied earlier, select the **Transport Type** dropdown and set to `SSE` and paste this into **URL** (please add `/sse` to the end) text box and press the `Connect` button:
+Using the HTTP URL you copied earlier, select the **Transport Type** dropdown and set to `Streamable HTTP` and paste the URL (no path suffix needed) into the **URL** text box, then press the `Connect` button:
 
 ![alt text](images/readme-sse-url.png).
+
+> [!NOTE]
+> As of SDK v1.2.0, the legacy SSE transport (`/sse`) is disabled by default. The server now uses the Streamable HTTP transport on the root endpoint. Use `http://localhost:5168/` as the URL.
 
 To see what tools are available, now press the `List Tools` button (located in the centre of the UI). This will reveal:
 

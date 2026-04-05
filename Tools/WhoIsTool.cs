@@ -13,7 +13,7 @@ public class WhoIsTool
     /// </summary>
     /// <param name="fullname">The full name of the person to generate information for.</param>
     /// <returns>A string containing the person's name followed by a randomly selected positive description.</returns>
-    [McpServerTool,
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Identification%20card/Flat/identification_card_flat.svg"),
      Description(
          "Retrieves information about a person based on their full name and returns a personalized statement with a randomly selected positive attribute")]
     public string WhoIs(string fullname) => $"{fullname.ToCapitalize()} is {_superlatives[_random.Next(_superlatives.Length)]}!";

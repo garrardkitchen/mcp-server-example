@@ -37,7 +37,7 @@ public class GitLabTools
     // Prompts:
     // 1 - table example: I would like to get a list of gitlab groups based on a search pattern and the result to be put in a  markdown table including their (1) name, (2) have web_url as a url link with the word 'click me' and (3) parent_id and (4) a suitable emoji to indicate if has_subgroups is true. if a group has the parent id that equals the group Id, then group those beneath it. include the group id in brackets after the group name
     // 2 - tree example: create a tree structure nesting the groups by parent id and group id
-    [McpServerTool, Description("Returns a list of Groups in GitLab")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Fox/Flat/fox_flat.svg"), Description("Returns a list of Groups in GitLab")]
     public async Task<IEnumerable<GitLabGroupDto>> SearchGroupsAsync(string pattern) {
 
         _logger.LogInformation("SearchGroupsAsync called with pattern: {Pattern}", pattern); // Log the method call
@@ -62,7 +62,7 @@ public class GitLabTools
     /// </summary>
     /// <param name="groupPattern">The search pattern used to locate the group in GitLab.</param>
     /// <returns>A task representing the asynchronous operation. The result contains a collection of GitLabProjectInfoDto objects representing the projects within the group.</returns>
-    [McpServerTool, Description("Returns a list of Projects in GitLab group")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Fox/Flat/fox_flat.svg"), Description("Returns a list of Projects in GitLab group")]
     public async Task<IEnumerable<GitLabProjectInfoDto>> GetProjectsInGroupAsync(string groupPattern) {
 
         _logger.LogInformation("GetProjectsInGroupAsync called with pattern: {Pattern}", groupPattern); // Log the method call
@@ -88,7 +88,7 @@ public class GitLabTools
     /// </summary>
     /// <param name="projectId">The identifier of the GitLab project for which the variables need to be retrieved.</param>
     /// <returns>A task representing the asynchronous operation. The result contains a collection of GitLabProjectVariableDto objects associated with the specified GitLab project.</returns>
-    [McpServerTool, Description("Returns a list of variables in GitLab project")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Fox/Flat/fox_flat.svg"), Description("Returns a list of variables in GitLab project")]
     public async Task<IEnumerable<GitLabProjectVariableDto>> GetVariablesInProjectAsync(string projectId) {
 
         _logger.LogInformation("GetVariablesInProjectAsync called with pattern: {Pattern}", projectId); // Log the method call
@@ -128,7 +128,7 @@ public class GitLabTools
     /// <param name="projectId">The ID of the GitLab project to check.</param>
     /// <param name="branchName">The branch to pull from initially.</param>
     /// <returns>A URL to the created merge request or a message indicating the budget already exists.</returns>
-    [McpServerTool, Description("Checks for and adds an Azure consumption budget to a GitLab project")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Fox/Flat/fox_flat.svg"), Description("Checks for and adds an Azure consumption budget to a GitLab project")]
     public async Task<string> AddAzureConsumptionBudgetAsync(string projectId, string branchName)
     {
         ValidateInputParameters(projectId, branchName);
