@@ -173,13 +173,17 @@ public class ElicitationTools
 
         _logger.LogInformation("Selected subscription: {SubscriptionId}", subscriptionId);
 
-        // Step 2: Fetch resource groups and present as multi-select
+        // Step 2: Fetch resource groups and distinct deployed resource types, then present together
         var subscriptionResource = _armClient.GetSubscriptionResource(new ResourceIdentifier($"/subscriptions/{subscriptionId}"));
         var rgNames = new List<string>();
+        var resourceTypes = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
         try
         {
             await foreach (var rg in subscriptionResource.GetResourceGroups().WithCancellation(token))
                 rgNames.Add(rg.Data.Name);
+
+            await foreach (var resource in subscriptionResource.GetGenericResourcesAsync(cancellationToken: token))
+                resourceTypes.Add(resource.Data.ResourceType.ToString());
         }
         catch (OperationCanceledException)
         {
@@ -187,8 +191,8 @@ public class ElicitationTools
         }
         catch (Azure.RequestFailedException ex)
         {
-            _logger.LogError(ex, "Failed to enumerate resource groups for subscription {SubscriptionId}", subscriptionId);
-            return $"Failed to retrieve resource groups: {ex.Message}";
+            _logger.LogError(ex, "Failed to enumerate resource groups or types for subscription {SubscriptionId}", subscriptionId);
+            return $"Failed to retrieve resource groups or types: {ex.Message}";
         }
 
         if (rgNames.Count == 0)
@@ -198,13 +202,23 @@ public class ElicitationTools
             .Select(name => new ElicitRequestParams.EnumSchemaOption { Const = name, Title = name })
             .ToList();
 
-        var rgResponse = await server.ElicitAsync(new ElicitRequestParams
+        var typeOptions = new List<ElicitRequestParams.EnumSchemaOption>
         {
-            Message = "Select one or more resource groups to inspect:",
+            new() { Const = "ALL", Title = "All resource types" }
+        };
+        typeOptions.AddRange(resourceTypes.Select(t => new ElicitRequestParams.EnumSchemaOption { Const = t, Title = t }));
+
+        var selectionResponse = await server.ElicitAsync(new ElicitRequestParams
+        {
+            Message = "Select an optional resource type and resource groups filter:",
             RequestedSchema = new ElicitRequestParams.RequestSchema
             {
                 Properties =
                 {
+                    ["ResourceType"] = new ElicitRequestParams.TitledSingleSelectEnumSchema
+                    {
+                        OneOf = typeOptions
+                    },
                     ["ResourceGroups"] = new ElicitRequestParams.TitledMultiSelectEnumSchema
                     {
                         Description = "Select the resource groups you want to inspect",
@@ -214,11 +228,11 @@ public class ElicitationTools
             }
         }, token);
 
-        if (!rgResponse.IsAccepted)
+        if (!selectionResponse.IsAccepted)
             return "Cancelled.";
 
         var selectedRgs = new List<string>();
-        if (rgResponse.Content?.TryGetValue("ResourceGroups", out var rgsEl) == true)
+        if (selectionResponse.Content?.TryGetValue("ResourceGroups", out var rgsEl) == true)
         {
             if (rgsEl.ValueKind == JsonValueKind.Array)
                 selectedRgs = rgsEl.EnumerateArray().Select(e => e.GetString()).OfType<string>().ToList();
@@ -229,9 +243,19 @@ public class ElicitationTools
         if (selectedRgs.Count == 0)
             return "No resource groups selected.";
 
-        _logger.LogInformation("Selected resource groups: {ResourceGroups}", string.Join(", ", selectedRgs));
+        var selectedType = selectionResponse.Content?.TryGetValue("ResourceType", out var typeEl) == true
+            ? typeEl.GetString() ?? "ALL"
+            : "ALL";
 
-        // Step 3: Retrieve resources for each selected resource group
+        _logger.LogInformation("Selected resource groups: {ResourceGroups}, type filter: {ResourceType}",
+            string.Join(", ", selectedRgs), selectedType);
+
+        // Build OData filter for SDK — avoids fetching unwanted resource types server-side
+        var odataFilter = selectedType.Equals("ALL", StringComparison.OrdinalIgnoreCase)
+            ? null
+            : $"resourceType eq '{selectedType}'";
+
+        // Step 3: Retrieve resources for each selected resource group, applying the type filter
         // Key is "ResourceType/Name" to avoid collisions when multiple resource types share a name
         var allResults = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
         foreach (var rgName in selectedRgs)
@@ -240,7 +264,7 @@ public class ElicitationTools
             try
             {
                 var resourceGroup = subscriptionResource.GetResourceGroup(rgName);
-                await foreach (var page in resourceGroup.Value.GetGenericResourcesAsync(cancellationToken: token).AsPages())
+                await foreach (var page in resourceGroup.Value.GetGenericResourcesAsync(filter: odataFilter, cancellationToken: token).AsPages())
                 {
                     foreach (var resource in page.Values)
                     {
@@ -266,7 +290,8 @@ public class ElicitationTools
             allResults[rgName] = resources;
         }
 
-        _logger.LogInformation("BrowseAzureResourcesAsync completed for {Count} resource group(s)", allResults.Count);
+        _logger.LogInformation("BrowseAzureResourcesAsync completed for {Count} resource group(s) with type filter '{ResourceType}'",
+            allResults.Count, selectedType);
         return JsonSerializer.Serialize(allResults, new JsonSerializerOptions { WriteIndented = true });
     }
 }

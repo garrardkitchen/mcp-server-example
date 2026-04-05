@@ -29,7 +29,7 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 ### ElicitationTools
 
 - **GuessTheNumber**: A simple interactive game demonstrating the elicitation feature where the user is prompted to guess a number between 1 and 10. This tool showcases how to use the MCP server's `ElicitAsync` method to request structured input from users, including boolean responses, enum options, string inputs with validation (max length), and date inputs with specific formats.
-- **BrowseAzureResourcesAsync**: A guided, multi-step tool that walks the user through selecting an Azure subscription (single-select), choosing one or more resource groups (multi-select), and then returns all resources within those groups as structured JSON. Each resource is keyed as `ResourceType/Name` to avoid collisions.
+- **BrowseAzureResourcesAsync**: A guided, multi-step tool that walks the user through selecting an Azure subscription (single-select), then choosing resource groups (multi-select) **and** a resource type filter (dropdown — `All resource types` or a specific deployed type), and returns all matching resources within those groups as structured JSON. Each resource is keyed as `ResourceType/Name` to avoid collisions.
 
 > [!NOTE]
 > This tool demonstrates the elicitation capability of MCP, which allows the server to request additional information from the user through a structured schema. The example shows:
