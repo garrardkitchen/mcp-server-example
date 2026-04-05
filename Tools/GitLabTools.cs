@@ -88,7 +88,7 @@ public class GitLabTools
     /// </summary>
     /// <param name="projectId">The identifier of the GitLab project for which the variables need to be retrieved.</param>
     /// <returns>A task representing the asynchronous operation. The result contains a collection of GitLabProjectVariableDto objects associated with the specified GitLab project.</returns>
-    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Fox/Flat/fox_flat.svg"), Description("Returns a list of variables in GitLab project")]
+    [McpServerTool(UseStructuredContent = true, IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Fox/Flat/fox_flat.svg"), Description("Returns a list of variables in GitLab project")]
     public async Task<IEnumerable<GitLabProjectVariableDto>> GetVariablesInProjectAsync(string projectId) {
 
         _logger.LogInformation("GetVariablesInProjectAsync called with pattern: {Pattern}", projectId); // Log the method call
@@ -128,7 +128,7 @@ public class GitLabTools
     /// <param name="projectId">The ID of the GitLab project to check.</param>
     /// <param name="branchName">The branch to pull from initially.</param>
     /// <returns>A URL to the created merge request or a message indicating the budget already exists.</returns>
-    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Fox/Flat/fox_flat.svg"), Description("Checks for and adds an Azure consumption budget to a GitLab project")]
+    [McpServerTool(UseStructuredContent = true, IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Fox/Flat/fox_flat.svg"), Description("Checks for and adds an Azure consumption budget to a GitLab project")]
     public async Task<string> AddAzureConsumptionBudgetAsync(string projectId, string branchName)
     {
         ValidateInputParameters(projectId, branchName);
