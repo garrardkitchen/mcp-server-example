@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased] - 2026-04-05
+
+### Added
+- `ElicitationTools`: New `BrowseAzureResourcesAsync` tool — guided multi-step elicitation that presents available Azure subscriptions (single-select), then resource groups for the chosen subscription (multi-select), and returns all resources per resource group as JSON keyed by `ResourceType/Name`
+- `ElicitationTools`: Inject `ArmClient` dependency to support Azure operations from elicitation flows
+
 ## [Unreleased] - 2026-04-04
 
 ### Fixed
