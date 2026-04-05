@@ -28,7 +28,7 @@ public class AzureTool
     /// Retrieves a dictionary containing the names and IDs of accessible Azure subscriptions.
     /// </summary>
     /// <returns>A dictionary where the key is the subscription display name, and the value is the corresponding subscription ID.</returns>
-    [McpServerTool, Description("Retrieves a list of azure subscriptions and their ID")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"), Description("Retrieves a list of azure subscriptions and their ID")]
     public async Task<Dictionary<string, string>> GetAzureSubscriptionsAsync()
     {
         var result = new Dictionary<string, string>();
@@ -44,7 +44,7 @@ public class AzureTool
     /// </summary>
     /// <param name="subscriptionId">The ID of the Azure subscription whose resource groups are to be retrieved.</param>
     /// <returns>A dictionary where the key is the resource group name, and the value is the corresponding resource group ID.</returns>
-    [McpServerTool, Description("Retrieves a list of azure resource groups for a subscription")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"), Description("Retrieves a list of azure resource groups for a subscription")]
     public async Task<Dictionary<string, string>> GetListOfResourceGroupsAsync(string subscriptionId)
     {
         var result = new Dictionary<string, string>();
@@ -66,7 +66,7 @@ public class AzureTool
     /// <param name="subscriptionId">The ID of the Azure subscription to retrieve virtual machines from.</param>
     /// <param name="tagKey">The tag key to filter the virtual machines by.</param>
     /// <returns>A dictionary where the key is the virtual machine name, and the value is its corresponding tags.</returns>
-    [McpServerTool,
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"),
      Description(
          "Retrieves all virtual machine names and their tags, from a subscription, where the virtual machine tags has a tag that matches a tag key")]
     public async Task<Dictionary<string, IDictionary<string, string>>> GetVirtualMachinesMatchTagKeyAsync(
@@ -92,7 +92,7 @@ public class AzureTool
     /// <param name="subscriptionId">The subscription ID where the resource group is located.</param>
     /// <param name="resourceGroupName">The name of the resource group to retrieve resources from.</param>
     /// <returns>A dictionary where the key is the resource name and the value is another dictionary containing metadata about the resource.</returns>
-    [McpServerTool, Description("Retrieves all resources within a specified resource group")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"), Description("Retrieves all resources within a specified resource group")]
     public async Task<Dictionary<string, IDictionary<string, string>>> GetResourcesInResourceGroupAsync(string subscriptionId, string resourceGroupName)
     {
         var result = new Dictionary<string, IDictionary<string, string>> ();
@@ -120,7 +120,7 @@ public class AzureTool
     /// </summary>
     /// <param name="resourceId">The Resource ID of the Azure resource for which properties and metadata are to be retrieved.</param>
     /// <returns>A dictionary containing key-value pairs representing the properties and metadata of the specified Azure resource.</returns>
-    [McpServerTool,
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"),
      Description("Retrieves a dictionary of properties and other metadata for a specific azure resource id")]
     public async Task<Dictionary<string, string>> GetResourcePropertiesAsync(string resourceId)
     {
@@ -144,7 +144,7 @@ public class AzureTool
             if (data.Properties != null)
             {
                 var propertiesDictionary = data.Properties.ToObjectFromJson<Dictionary<string, object>>();
-                foreach (var prop in propertiesDictionary)
+                foreach (var prop in propertiesDictionary ?? [])
                 {
                     result[$"Property:{prop.Key}"] = prop.Value?.ToString() ?? "";
                 }

@@ -20,7 +20,7 @@ public class SensitiveDataExampleTool
     /// <param name="username"></param>
     /// <param name="secret"></param>
     /// <returns></returns>
-    [McpServerTool, Description("Sets a secret for a username")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Locked/Flat/locked_flat.svg"), Description("Sets a secret for a username")]
     public string SetASecretForDemoPurposes(
         [Description("Username")] string username,
         [Description("The secret to set")] string secret)
@@ -35,7 +35,7 @@ public class SensitiveDataExampleTool
     /// <param name="username"></param>
     /// <param name="secret"></param>
     /// <returns></returns>
-    [McpServerTool, Description("Sets a secret for a username")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Locked/Flat/locked_flat.svg"), Description("Sets a secret for a username")]
     public string AAAEcho(
         [Description("Text to echo back")] string echo = "Hello, World!")
     {
@@ -49,7 +49,7 @@ public class SensitiveDataExampleTool
     /// <param name="url"></param>
     /// <param name="key"></param>
     /// <returns></returns>
-    [McpServerTool, Description("Sets an API Key for a URL")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Locked/Flat/locked_flat.svg"), Description("Sets an API Key for a URL")]
     public string SetAnApiKeyForDemoPurposes(
         [Description("URL")] string url, 
         [Description("The Key to the Api")] string key) => $"To access {url.ToLower()} use this {key.ToPartialMask()}!";
