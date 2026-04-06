@@ -1,3 +1,4 @@
+using EverythingServer.Middleware;
 using EverythingServer.Resources;
 using EverythingServer.Prompts;
 using EverythingServer.Tools;
@@ -32,6 +33,7 @@ builder.Services.AddMcpServer()
 
 var app = builder.Build();
 
+app.UseMiddleware<UserAgentLoggingMiddleware>();
 app.MapMcp();
 
 await app.RunAsync();

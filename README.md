@@ -2,6 +2,16 @@
 
 This project demonstrates a basic implementation of an MCP (Model Context Protocol) server using .NET. It provides endpoints for interacting with MCP clients and includes tools for testing and debugging, such as the MCP Inspector. The example also shows how to integrate with external services like GitLab using user secrets for configuration.
 
+## Middleware
+
+### UserAgentLoggingMiddleware
+
+Logs the HTTP `User-Agent` header for every incoming request, including the HTTP method and path. Registered before `MapMcp()` so it covers all MCP traffic. Output example:
+
+```
+Incoming request POST /mcp — User-Agent: claude-ai/1.0 mcp-client/0.4
+```
+
 ## Tools
 
 ### AzureTool

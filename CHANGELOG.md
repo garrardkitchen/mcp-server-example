@@ -2,7 +2,12 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased] - 2026-04-05
+## [Unreleased] - 2026-04-06
+
+### Added
+- `Middleware/UserAgentLoggingMiddleware.cs`: New ASP.NET Core middleware that logs the HTTP `User-Agent` header (method, path, and agent string) for every incoming request; gracefully handles absent headers
+
+
 
 ### Added
 - `ElicitationTools`: New `BrowseAzureResourcesAsync` tool — guided multi-step elicitation that presents available Azure subscriptions (single-select), then resource groups for the chosen subscription (multi-select) alongside a resource type filter (single-select dropdown populated from deployed types in the subscription, with an "All resource types" default), and returns all matching resources per resource group as JSON keyed by `ResourceType/Name`
