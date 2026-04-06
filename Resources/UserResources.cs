@@ -22,8 +22,8 @@ public class UserResources
     /// <param name="userId">The unique identifier of the user to retrieve.</param>
     /// <returns>A task representing the asynchronous operation containing the YAML formatted user data.</returns>
     [McpServerResource(UriTemplate = "user://{userId}", Name = "user-data", MimeType = "application/x-yaml", IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Bust%20in%20silhouette/Flat/bust_in_silhouette_flat.svg")]
-    [Description("Returns user information from the database as YAML content. Specify the userId to retrieve a specific user's data.")]
-    public async Task<string> GetUserAsYamlAsync(string userId)
+    [Description("Returns a single user's profile as YAML. Fields: userId, firstName, lastName, email, role, department, isActive, createdAt, lastLoginAt, metadata.")]
+    public async Task<string> GetUserAsYamlAsync([Description("User ID (e.g. 'user001')")] string userId)
     {
         _logger.LogInformation("GetUserAsYamlAsync called for userId: {UserId}", userId);
 
@@ -60,7 +60,7 @@ public class UserResources
     /// </summary>
     /// <returns>A task representing the asynchronous operation containing YAML formatted list of users.</returns>
     [McpServerResource(UriTemplate = "users://all", Name = "all-users", MimeType = "application/x-yaml", IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Busts%20in%20silhouette/Flat/busts_in_silhouette_flat.svg")]
-    [Description("Returns a list of all users from the database as YAML content")]
+    [Description("Returns all users as a YAML list. Fields per user: userId, firstName, lastName, email, role, department, isActive, createdAt, lastLoginAt, metadata.")]
     public async Task<string> GetAllUsersAsYamlAsync()
     {
         _logger.LogInformation("GetAllUsersAsYamlAsync called");

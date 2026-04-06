@@ -4,8 +4,9 @@ All notable changes to this project are documented here.
 
 ## [Unreleased] - 2026-04-06
 
-### Added
-- `Middleware/UserAgentLoggingMiddleware.cs`: New ASP.NET Core middleware that logs the HTTP `User-Agent` header (method, path, and agent string) for every incoming request; gracefully handles absent headers
+### Changed
+- All tools, prompts, and resources: rewrote `[Description]` attributes to be LLM-optimised — verb-first, succinct, front-loaded with action and output shape; added `[Description]` to all bare parameters across `AzureTools`, `GitLabTools`, `WhoIsTool`, `SensitiveDataExampleTool`, `TextPrompts`, `UserResources`, `KitchenApplianceResources`, and `SimpleResourceType`
+- `SensitiveDataExampleTool.AAAEcho`: fixed description (previously read "Sets a secret for a username" — wrong tool)
 
 
 

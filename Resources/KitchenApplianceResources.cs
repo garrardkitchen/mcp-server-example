@@ -33,7 +33,7 @@ public class KitchenApplianceResources
         Title = "Kitchen Appliance Catalogue",
         MimeType = "application/json",
         IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Pot%20of%20food/Flat/pot_of_food_flat.svg")]
-    [Description("Returns the full kitchen appliance catalogue as a JSON table with 10 rows")]
+    [Description("Returns the full 10-item kitchen appliance catalogue as JSON. Fields: id, name, category, powerWatts, priceGbp, brand, hasDigitalControls.")]
     public static string GetAllAppliances()
         => JsonSerializer.Serialize(
             new { appliances = _appliances },
@@ -48,8 +48,8 @@ public class KitchenApplianceResources
         Title = "Kitchen Appliance",
         MimeType = "application/json",
         IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Pot%20of%20food/Flat/pot_of_food_flat.svg")]
-    [Description("Returns a single kitchen appliance by numeric ID (1–10)")]
-    public static string GetApplianceById(int id)
+    [Description("Returns a single kitchen appliance by ID as JSON. Fields: id, name, category, powerWatts, priceGbp, brand, hasDigitalControls.")]
+    public static string GetApplianceById([Description("Appliance ID, integer 1–10")] int id)
     {
         var appliance = _appliances.FirstOrDefault(a => a.Id == id)
             ?? throw new KeyNotFoundException($"No appliance found with id {id}");

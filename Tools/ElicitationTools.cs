@@ -21,7 +21,7 @@ public class ElicitationTools
     }
     
     [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Game%20die/Flat/game_die_flat.svg")]
-    [Description("A simple game where the user has to guess a number between 1 and 10. #elicitation")]
+    [Description("Interactive number-guessing game. Prompts the user for range (0–10 or 11–20), a title, a date, and multi-select options, then asks for a numeric guess and reports win/loss. Demonstrates MCP elicitation schema types. #elicitation")]
     public async Task<string> GuessTheNumber(McpServer server, CancellationToken token)
     {
         
@@ -119,7 +119,7 @@ public class ElicitationTools
     }
 
     [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg")]
-    [Description("Guides you through selecting an Azure subscription and resource groups, then returns all resources in those groups. #elicitation")]
+    [Description("Guided Azure resource browser. Interactively selects a subscription (single-select), then resource groups (multi-select) and a resource type filter (dropdown). Returns matching resources as JSON keyed by 'ResourceType/Name'. #elicitation")]
     public async Task<string> BrowseAzureResourcesAsync(McpServer server, CancellationToken token)
     {
         // Step 1: Fetch subscriptions and present as single-select

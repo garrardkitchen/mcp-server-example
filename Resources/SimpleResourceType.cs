@@ -8,12 +8,12 @@ namespace EverythingServer.Resources;
 public class SimpleResourceType
 {
     [McpServerResource(UriTemplate = "test://direct/text/resource", Name = "Direct Text Resource", MimeType = "text/plain", IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Page%20facing%20up/Flat/page_facing_up_flat.svg")]
-    [Description("A direct text resource")]
+    [Description("Static plain-text test resource. Returns a fixed string. Use to verify resource reading works.")]
     public static string DirectTextResource() => "This is a direct resource";
 
     [McpServerResource(UriTemplate = "test://template/resource/{id}", Name = "Template Resource", IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Page%20facing%20up/Flat/page_facing_up_flat.svg")]
-    [Description("A template resource with a numeric ID")]
-    public static ResourceContents TemplateResource(RequestContext<ReadResourceRequestParams> requestContext, int id)
+    [Description("Returns a pre-generated test resource by ID (1–100). Odd IDs return plain text; even IDs return base64-encoded binary.")]
+    public static ResourceContents TemplateResource(RequestContext<ReadResourceRequestParams> requestContext, [Description("Resource ID, integer 1–100")] int id)
     {
         int index = id - 1;
         if ((uint)index >= ResourceGenerator.Resources.Count)

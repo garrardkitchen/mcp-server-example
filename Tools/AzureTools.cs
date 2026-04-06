@@ -28,7 +28,7 @@ public class AzureTool
     /// Retrieves a dictionary containing the names and IDs of accessible Azure subscriptions.
     /// </summary>
     /// <returns>A dictionary where the key is the subscription display name, and the value is the corresponding subscription ID.</returns>
-    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"), Description("Retrieves a list of azure subscriptions and their ID")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"), Description("Lists all accessible Azure subscriptions. Returns {displayName → subscriptionId} map.")]
     public async Task<Dictionary<string, string>> GetAzureSubscriptionsAsync()
     {
         var result = new Dictionary<string, string>();
@@ -44,8 +44,9 @@ public class AzureTool
     /// </summary>
     /// <param name="subscriptionId">The ID of the Azure subscription whose resource groups are to be retrieved.</param>
     /// <returns>A dictionary where the key is the resource group name, and the value is the corresponding resource group ID.</returns>
-    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"), Description("Retrieves a list of azure resource groups for a subscription")]
-    public async Task<Dictionary<string, string>> GetListOfResourceGroupsAsync(string subscriptionId)
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"), Description("Lists all resource groups in an Azure subscription. Returns {name → resourceGroupId} map.")]
+    public async Task<Dictionary<string, string>> GetListOfResourceGroupsAsync(
+        [Description("Azure subscription ID (GUID)")] string subscriptionId)
     {
         var result = new Dictionary<string, string>();
         var subscriptionResource =
@@ -67,10 +68,10 @@ public class AzureTool
     /// <param name="tagKey">The tag key to filter the virtual machines by.</param>
     /// <returns>A dictionary where the key is the virtual machine name, and the value is its corresponding tags.</returns>
     [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"),
-     Description(
-         "Retrieves all virtual machine names and their tags, from a subscription, where the virtual machine tags has a tag that matches a tag key")]
+     Description("Lists VMs in a subscription that possess a specific tag key. Returns {vmName → allTags} for matched VMs only.")]
     public async Task<Dictionary<string, IDictionary<string, string>>> GetVirtualMachinesMatchTagKeyAsync(
-        string subscriptionId, string tagKey)
+        [Description("Azure subscription ID (GUID)")] string subscriptionId,
+        [Description("Tag key to filter VMs by (e.g. 'environment', 'owner')")] string tagKey)
     {
         var result = new Dictionary<string, IDictionary<string, string>>();
         var subscription = _client.GetSubscriptionResource(new ResourceIdentifier($"/subscriptions/{subscriptionId}"));
@@ -92,8 +93,10 @@ public class AzureTool
     /// <param name="subscriptionId">The subscription ID where the resource group is located.</param>
     /// <param name="resourceGroupName">The name of the resource group to retrieve resources from.</param>
     /// <returns>A dictionary where the key is the resource name and the value is another dictionary containing metadata about the resource.</returns>
-    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"), Description("Retrieves all resources within a specified resource group")]
-    public async Task<Dictionary<string, IDictionary<string, string>>> GetResourcesInResourceGroupAsync(string subscriptionId, string resourceGroupName)
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"), Description("Lists all resources in a resource group. Returns {resourceName → {ResourceType, ResourceId}} map.")]
+    public async Task<Dictionary<string, IDictionary<string, string>>> GetResourcesInResourceGroupAsync(
+        [Description("Azure subscription ID (GUID)")] string subscriptionId,
+        [Description("Exact resource group name")] string resourceGroupName)
     {
         var result = new Dictionary<string, IDictionary<string, string>> ();
         var subscription = _client.GetSubscriptionResource(new ResourceIdentifier($"/subscriptions/{subscriptionId}"));
@@ -121,8 +124,9 @@ public class AzureTool
     /// <param name="resourceId">The Resource ID of the Azure resource for which properties and metadata are to be retrieved.</param>
     /// <returns>A dictionary containing key-value pairs representing the properties and metadata of the specified Azure resource.</returns>
     [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Cloud/Flat/cloud_flat.svg"),
-     Description("Retrieves a dictionary of properties and other metadata for a specific azure resource id")]
-    public async Task<Dictionary<string, string>> GetResourcePropertiesAsync(string resourceId)
+     Description("Returns full properties and metadata for a specific Azure resource. Includes Id, Name, Type, Location, Kind, Tags, and all resource-specific properties prefixed with 'Property:'.")]
+    public async Task<Dictionary<string, string>> GetResourcePropertiesAsync(
+        [Description("Full Azure resource ID (e.g. /subscriptions/{subId}/resourceGroups/{rg}/providers/{type}/{name})")] string resourceId)
     {
         var result = new Dictionary<string, string>();
         var resource = await _client.GetGenericResource(new ResourceIdentifier(resourceId)).GetAsync();
