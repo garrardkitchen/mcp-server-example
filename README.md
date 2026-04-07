@@ -133,35 +133,66 @@ Copy the Http URL as you'll need this when you run the MCP Inspector (see the ne
 
 ## How to debug/test
 
-If you're not receiving the responses you expect, or if you want to test and interact with your MCP server(s) outside of the VSCode environment, you can use the MCP Inspector. This tool provides a user-friendly interface for testing and debugging your MCP servers. [Access the MCP Inspector source code here](https://github.com/modelcontextprotocol/inspector).
+[MCP Explorer X](https://mcp-explorer-x-docs.garrardkitchen.com/docs/getting-started/quickstart/#option-1--single-container-docker-run) is the recommended way to test and interact with this MCP server outside of your IDE. It provides a browser-based UI for browsing tools, invoking them with arguments, and inspecting responses — including full elicitation support.
 
-To install the inspector, enter this into your terminal:
+![MCP Explorer X — Tools landing page](https://mcp-explorer-x-docs.garrardkitchen.com/images/screenshots/landing-tools-prev-values.png)
 
+### Quick start (Docker)
+
+Pick the command for your OS, run it in a terminal, then open [http://localhost:8091](http://localhost:8091):
+
+**macOS**
 ```bash
-npx @modelcontextprotocol/inspector dotnet run
+dataRoot="$HOME/Library/Application Support/McpExplorerX-docker"
+mkdir -p "${dataRoot}"
+
+docker run --rm -it \
+  -p 8091:8080 \
+  -v "${dataRoot}:/root/.local/share/McpExplorer" \
+  -v ~/.azure:/root/.azure \
+  -e AZURE_CONFIG_DIR=/root/.azure \
+  -e HOST_AZURE_CONFIG_DIR=${HOME}/.azure \
+  -e PREFERENCES__StoragePath=/data/settings.json \
+  -e ASPNETCORE_ENVIRONMENT=Production \
+  garrardkitchen/mcp-explorer-x:latest
 ```
 
-This then starts the MCP Inspector.  Click on the HTTP URL to access the Inspector:
-
+**Linux**
 ```bash
-Starting MCP inspector...
-⚙️ Proxy server listening on port 6277
-🔍 MCP Inspector is up and running at http://127.0.0.1:6274 🚀
-New SSE connection
+dataRoot="$HOME/.config/McpExplorerX-docker"
+mkdir -p "${dataRoot}"
+
+docker run --rm -it \
+  -p 8091:8080 \
+  -v "${dataRoot}:/root/.local/share/McpExplorer" \
+  -v ~/.azure:/root/.azure \
+  -e AZURE_CONFIG_DIR=/root/.azure \
+  -e HOST_AZURE_CONFIG_DIR=${HOME}/.azure \
+  -e PREFERENCES__StoragePath=/data/settings.json \
+  -e ASPNETCORE_ENVIRONMENT=Production \
+  garrardkitchen/mcp-explorer-x:latest
 ```
 
-Using the HTTP URL you copied earlier, select the **Transport Type** dropdown and set to `Streamable HTTP` and paste the URL (no path suffix needed) into the **URL** text box, then press the `Connect` button:
+**Windows (PowerShell)**
+```powershell
+$dataRoot="$HOME\AppData\Local\McpExplorerX-docker"
+New-Item -ItemType Directory -Force -Path $dataRoot | Out-Null
 
-![alt text](images/readme-sse-url.png).
+docker run --rm -it `
+  -p 8091:8080 `
+  -v "${dataRoot}:/root/.local/share/McpExplorer" `
+  -v ~/.azure:/root/.azure `
+  -e AZURE_CONFIG_DIR=/root/.azure `
+  -e HOST_AZURE_CONFIG_DIR=${HOME}/.azure `
+  -e PREFERENCES__StoragePath=/data/settings.json `
+  -e ASPNETCORE_ENVIRONMENT=Production `
+  garrardkitchen/mcp-explorer-x:latest
+```
+
+Once running, add this server as a connection using `http://localhost:5168` (Streamable HTTP transport) and browse the available tools, resources, and prompts.
 
 > [!NOTE]
-> As of SDK v1.2.0, the legacy SSE transport (`/sse`) is disabled by default. The server now uses the Streamable HTTP transport on the root endpoint. Use `http://localhost:5168/` as the URL.
-
-To see what tools are available, now press the `List Tools` button (located in the centre of the UI). This will reveal:
-
-![alt text](images/readme-list-tools.png)
-
-Now it's over to you to experiment!
+> For full setup options including Docker Compose, environment variable reference, and Azure credential mounting, see the [MCP Explorer X quickstart docs](https://mcp-explorer-x-docs.garrardkitchen.com/docs/getting-started/quickstart/#option-1--single-container-docker-run).
 
 ## User Secrets
 

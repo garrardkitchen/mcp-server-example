@@ -2,7 +2,12 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased] - 2026-04-06
+## [Unreleased] - 2026-04-07
+
+### Changed
+- `README.md`: Replaced MCP Inspector debug/test section with MCP Explorer X instructions — includes screenshot, macOS/Linux/Windows Docker run commands, and link to the [quickstart docs](https://mcp-explorer-x-docs.garrardkitchen.com/docs/getting-started/quickstart/#option-1--single-container-docker-run)
+
+
 
 ### Changed
 - All tools, prompts, and resources: rewrote `[Description]` attributes to be LLM-optimised — verb-first, succinct, front-loaded with action and output shape; added `[Description]` to all bare parameters across `AzureTools`, `GitLabTools`, `WhoIsTool`, `SensitiveDataExampleTool`, `TextPrompts`, `UserResources`, `KitchenApplianceResources`, and `SimpleResourceType`
