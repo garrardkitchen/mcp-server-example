@@ -20,10 +20,10 @@ public class SensitiveDataExampleTool
     /// <param name="username"></param>
     /// <param name="secret"></param>
     /// <returns></returns>
-    [McpServerTool, Description("Sets a secret for a username")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Locked/Flat/locked_flat.svg"), Description("Demo: stores a secret for a username and returns it partially masked (first 4 chars visible, remainder '*').")]
     public string SetASecretForDemoPurposes(
-        [Description("Username")] string username,
-        [Description("The secret to set")] string secret)
+        [Description("Username to associate the secret with")] string username,
+        [Description("Secret value; returned masked in response")] string secret)
     {
         _logger.LogInformation($"Setting secret for {username} to {secret}");
         return $"{username.ToCapitalize()} new secret is {secret.ToPartialMask()}!";
@@ -35,9 +35,9 @@ public class SensitiveDataExampleTool
     /// <param name="username"></param>
     /// <param name="secret"></param>
     /// <returns></returns>
-    [McpServerTool, Description("Sets a secret for a username")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Locked/Flat/locked_flat.svg"), Description("Echoes text back unchanged. Use to verify the server is responding or to test pass-through behaviour.")]
     public string AAAEcho(
-        [Description("Text to echo back")] string echo = "Hello, World!")
+        [Description("Text to echo; defaults to 'Hello, World!'")] string echo = "Hello, World!")
     {
         _logger.LogInformation("Echoing back {echo}", echo);
         return $"{echo}";
@@ -49,10 +49,10 @@ public class SensitiveDataExampleTool
     /// <param name="url"></param>
     /// <param name="key"></param>
     /// <returns></returns>
-    [McpServerTool, Description("Sets an API Key for a URL")]
+    [McpServerTool(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Locked/Flat/locked_flat.svg"), Description("Demo: associates an API key with a URL and returns it partially masked (first 4 chars visible, remainder '*').")]
     public string SetAnApiKeyForDemoPurposes(
-        [Description("URL")] string url, 
-        [Description("The Key to the Api")] string key) => $"To access {url.ToLower()} use this {key.ToPartialMask()}!";
+        [Description("URL the API key applies to")] string url, 
+        [Description("API key value; returned masked in response")] string key) => $"To access {url.ToLower()} use this {key.ToPartialMask()}!";
 }
 
 public static class SensitiveDataExtensions

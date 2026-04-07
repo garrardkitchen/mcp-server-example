@@ -15,17 +15,17 @@ public class TextPrompts
     /// </summary>
     /// <param name="word">The single word to reverse.</param>
     /// <returns>A prompt string.</returns>
-    [McpServerPrompt, Description("Reverse a word and output only the reversed word")]
-    public string ReverseWord(string word)
-        => $"Reverse the following word exactly and output only the reversed word with no explanation or punctuation. Word: {word}";
+    [McpServerPrompt(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Memo/Flat/memo_flat.svg"), Description("Reverses a single word. Output is the reversed word only — no explanation, no punctuation.")]
+    public string ReverseWord([Description("Single word to reverse")] string word)
+        => $"Reverse the following word exactly and output only the reversed word with no explanation or punctuation. Word: {word}. When processed by a language model, only return the reversed word and nothing else!";
 
     /// <summary>
     /// Creates a prompt that instructs the model to provide a one-sentence summary of the provided text.
     /// </summary>
     /// <param name="text">The input text to summarize.</param>
     /// <returns>A prompt string.</returns>
-    [McpServerPrompt, Description("Provide a single concise sentence summarizing the provided text")]
-    public string OneSentenceSummary(string text)
+    [McpServerPrompt(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Memo/Flat/memo_flat.svg"), Description("Summarises text in one sentence (≤25 words).")]
+    public string OneSentenceSummary([Description("Text to summarise")] string text)
         => $"Provide a single concise sentence that summarizes the following content. Keep it under 25 words.\n\nContent:\n{text}";
 
     /// <summary>
@@ -33,8 +33,8 @@ public class TextPrompts
     /// </summary>
     /// <param name="topic">The subject to summarize.</param>
     /// <returns>A prompt string.</returns>
-    [McpServerPrompt, Description("Provide a short summary, a bullet list of benefits, and a list of references for the given topic")]
-    public string SummaryBenefitsAndReferences(string topic)
+    [McpServerPrompt(IconSource = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Memo/Flat/memo_flat.svg"), Description("Generates a Markdown document with a summary paragraph, bullet list of key benefits, and a reference list for the given topic.")]
+    public string SummaryBenefitsAndReferences([Description("Topic to research and document")] string topic)
         => "You are a helpful technical writer. Using the topic below, produce Markdown with: " +
            "1) a brief summary paragraph; 2) a bullet list of key benefits; 3) a bullet list of references (URLs or titles). " +
            "Be accurate, avoid speculation, and do not fabricate references. If unsure, say so.\n\n" +

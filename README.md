@@ -2,6 +2,16 @@
 
 This project demonstrates a basic implementation of an MCP (Model Context Protocol) server using .NET. It provides endpoints for interacting with MCP clients and includes tools for testing and debugging, such as the MCP Inspector. The example also shows how to integrate with external services like GitLab using user secrets for configuration.
 
+## Middleware
+
+### UserAgentLoggingMiddleware
+
+Logs the HTTP `User-Agent` header for every incoming request, including the HTTP method and path. Registered before `MapMcp()` so it covers all MCP traffic. Output example:
+
+```
+Incoming request POST /mcp — User-Agent: claude-ai/1.0 mcp-client/0.4
+```
+
 ## Tools
 
 ### AzureTool
@@ -29,6 +39,7 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 ### ElicitationTools
 
 - **GuessTheNumber**: A simple interactive game demonstrating the elicitation feature where the user is prompted to guess a number between 1 and 10. This tool showcases how to use the MCP server's `ElicitAsync` method to request structured input from users, including boolean responses, enum options, string inputs with validation (max length), and date inputs with specific formats.
+- **BrowseAzureResourcesAsync**: A guided, multi-step tool that walks the user through selecting an Azure subscription (single-select), then choosing resource groups (multi-select) **and** a resource type filter (dropdown — `All resource types` or a specific deployed type), and returns all matching resources within those groups as structured JSON. Each resource is keyed as `ResourceType/Name` to avoid collisions.
 
 > [!NOTE]
 > This tool demonstrates the elicitation capability of MCP, which allows the server to request additional information from the user through a structured schema. The example shows:
@@ -66,6 +77,22 @@ This project demonstrates a basic implementation of an MCP (Model Context Protoc
 > - using the subscription-siem gitlab project, check for an azure consumption budget in the "feat/kitcheng/init" branch, and add if not found
 > - Get a list of GitLab groups using the search pattern upe as a markdown table with name, web_url (as 'click me'), parent_id, and an emoji for has_subgroups. Group by parent id. Include group id in brackets after the name. Then create a tree structure nesting groups by parent id and group id.
 
+## Resources
+
+### KitchenApplianceResources
+
+- **kitchen://appliances/all**: Returns the full kitchen appliance catalogue as a JSON table (10 rows).
+- **kitchen://appliances/{id}**: Returns a single appliance by numeric ID (1–10).
+
+Each appliance row includes: `id`, `name`, `category`, `powerWatts`, `priceGbp`, `brand`, `hasDigitalControls`.
+
+### UserResources
+
+This project exposes YAML-formatted user data via two MCP resources:
+
+- **user://{userId}**: Returns user data as YAML for a specific user.
+- **users://all**: Returns all users as YAML.
+
 ## Prompts
 
 This project also exposes three simple MCP prompts (see `Prompts/TextPrompts.cs`):
@@ -75,7 +102,7 @@ This project also exposes three simple MCP prompts (see `Prompts/TextPrompts.cs`
 - SummaryBenefitsAndReferences(topic): Return a short summary paragraph, a bullet list of benefits, and a bullet list of references for the given topic.
 
 How to try them with the MCP Inspector:
-- Start this server (see How to run below) and connect the Inspector via SSE as shown later in this README.
+- Start this server (see How to run below) and connect the Inspector via Streamable HTTP as shown later in this README.
 - Click List Prompts and select one of the above prompt names.
 - Provide the parameter value(s) when prompted and run it.
 
@@ -106,32 +133,66 @@ Copy the Http URL as you'll need this when you run the MCP Inspector (see the ne
 
 ## How to debug/test
 
-If you're not receiving the responses you expect, or if you want to test and interact with your MCP server(s) outside of the VSCode environment, you can use the MCP Inspector. This tool provides a user-friendly interface for testing and debugging your MCP servers. [Access the MCP Inspector source code here](https://github.com/modelcontextprotocol/inspector).
+[MCP Explorer X](https://mcp-explorer-x-docs.garrardkitchen.com/docs/getting-started/quickstart/#option-1--single-container-docker-run) is the recommended way to test and interact with this MCP server outside of your IDE. It provides a browser-based UI for browsing tools, invoking them with arguments, and inspecting responses — including full elicitation support.
 
-To install the inspector, enter this into your terminal:
+![MCP Explorer X — Tools landing page](https://mcp-explorer-x-docs.garrardkitchen.com/images/screenshots/landing-tools-prev-values.png)
 
+### Quick start (Docker)
+
+Pick the command for your OS, run it in a terminal, then open [http://localhost:8091](http://localhost:8091):
+
+**macOS**
 ```bash
-npx @modelcontextprotocol/inspector dotnet run
+dataRoot="$HOME/Library/Application Support/McpExplorerX-docker"
+mkdir -p "${dataRoot}"
+
+docker run --rm -it \
+  -p 8091:8080 \
+  -v "${dataRoot}:/root/.local/share/McpExplorer" \
+  -v ~/.azure:/root/.azure \
+  -e AZURE_CONFIG_DIR=/root/.azure \
+  -e HOST_AZURE_CONFIG_DIR=${HOME}/.azure \
+  -e PREFERENCES__StoragePath=/data/settings.json \
+  -e ASPNETCORE_ENVIRONMENT=Production \
+  garrardkitchen/mcp-explorer-x:latest
 ```
 
-This then starts the MCP Inspector.  Click on the HTTP URL to access the Inspector:
-
+**Linux**
 ```bash
-Starting MCP inspector...
-⚙️ Proxy server listening on port 6277
-🔍 MCP Inspector is up and running at http://127.0.0.1:6274 🚀
-New SSE connection
+dataRoot="$HOME/.config/McpExplorerX-docker"
+mkdir -p "${dataRoot}"
+
+docker run --rm -it \
+  -p 8091:8080 \
+  -v "${dataRoot}:/root/.local/share/McpExplorer" \
+  -v ~/.azure:/root/.azure \
+  -e AZURE_CONFIG_DIR=/root/.azure \
+  -e HOST_AZURE_CONFIG_DIR=${HOME}/.azure \
+  -e PREFERENCES__StoragePath=/data/settings.json \
+  -e ASPNETCORE_ENVIRONMENT=Production \
+  garrardkitchen/mcp-explorer-x:latest
 ```
 
-Using the HTTP Url you copied earlier, select the **Transport Type** dropdown and set to `SSE` and paste this into **URL** (please add `/sse` to the end) text box and press the `Connect` button:
+**Windows (PowerShell)**
+```powershell
+$dataRoot="$HOME\AppData\Local\McpExplorerX-docker"
+New-Item -ItemType Directory -Force -Path $dataRoot | Out-Null
 
-![alt text](images/readme-sse-url.png).
+docker run --rm -it `
+  -p 8091:8080 `
+  -v "${dataRoot}:/root/.local/share/McpExplorer" `
+  -v ~/.azure:/root/.azure `
+  -e AZURE_CONFIG_DIR=/root/.azure `
+  -e HOST_AZURE_CONFIG_DIR=${HOME}/.azure `
+  -e PREFERENCES__StoragePath=/data/settings.json `
+  -e ASPNETCORE_ENVIRONMENT=Production `
+  garrardkitchen/mcp-explorer-x:latest
+```
 
-To see what tools are available, now press the `List Tools` button (located in the centre of the UI). This will reveal:
+Once running, add this server as a connection using `http://localhost:5168` (Streamable HTTP transport) and browse the available tools, resources, and prompts.
 
-![alt text](images/readme-list-tools.png)
-
-Now it's over to you to experiment!
+> [!NOTE]
+> For full setup options including Docker Compose, environment variable reference, and Azure credential mounting, see the [MCP Explorer X quickstart docs](https://mcp-explorer-x-docs.garrardkitchen.com/docs/getting-started/quickstart/#option-1--single-container-docker-run).
 
 ## User Secrets
 
